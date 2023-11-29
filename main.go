@@ -11,22 +11,16 @@ func main() {
 	defer router.Run(":8000")
 	
 	//Bunch of APIS for account management 
-	account:=router.Group("/account")
+	account:=router.Group("api/account")
 	{
-        account.GET("/",)
+        account.GET("/balance",controller.CheckBalance())
         account.POST("/",controller.CreateAccount())
 	}
 
     //Bunch of APIS for GROUP management 
-    groups:=router.Group("/groups")
+    groups:=router.Group("api/groups")
 	{
         groups.POST("/add",controller.CreateAccountGroup())
         groups.POST("/",controller.CreateGroup())
 	}
-
-	transaction:=router.Group("/transaction")
-	{
-        transaction.POST("/",controller.CreateTransaction())
-	}
-
 }

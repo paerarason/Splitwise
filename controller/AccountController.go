@@ -6,6 +6,8 @@ import (
     "net/http"
 	"golang.org/x/crypto/bcrypt"
 	 _ "github.com/lib/pq"
+     "log"
+     "database/sql"
 
 )
 type Account struct {
@@ -39,7 +41,6 @@ func CreateAccount() gin.HandlerFunc {
           VALUES ($1, $2, $3, $4) RETURNING id`
         
         dberr := db.QueryRow(query, acc.Username, acc.Password, acc.Email, 5000).Scan(&accid)
-        
         //Handlinf while making Queries
         if dberr!=nil{ 
             c.JSON(http.StatusBadRequest,gin.H{"message": "Bad Request"}) 
@@ -50,31 +51,55 @@ func CreateAccount() gin.HandlerFunc {
 }
 
 
-
-
-func GETspends() gin.HandlerFunc {
+func GETspendAmount() gin.HandlerFunc {
     return func(c *gin.Context){
+        db,err:=database.DB_connection()        
+        //error Handling while making Connection 
+        if err!=nil{
+            c.JSON(http.StatusBadRequest,gin.H{"message": "Bad Request "}) 
+             return 
+        }
+        user_id:=token()
+        query := `SELECT COALESCE(SUM(transaction.amount), 0) AS total_amount
+                   FROM account_Group
+                   LEFT JOIN transaction  ON account_Group.ID = transaction.Account_Group_id
+                   WHERE account_Group.ID = $1
+        `
+        var spent sql.NullFloat64
+        derr := db.QueryRow(query, user_id).Scan(&spent)
+        if derr != nil {
+        log.Fatal(derr)
+        }
 
-
-     }
+        if !spent.Valid {
+             log.Fatal("NO spent Record Found")
+             c.JSON(http.StatusBadRequest,gin.H{"message": "Records Not Found "}) 
+             return
+            }
+        c.JSON(http.StatusOK,gin.H{"spents":spent}) 
+    }
 }
+
 
 
 func CheckBalance() gin.HandlerFunc {
     return func(c *gin.Context){
+        db,err:=database.DB_connection()        
+        //error Handling while making Connection 
+        if err!=nil{
+            c.JSON(http.StatusBadRequest,gin.H{"message": "Bad Request "}) 
+             return 
+        }
+        var balance float32
+        query := `SELECT balance FROM account WHERE account.ID=$1`
+        err = db.QueryRow(query, user_id).Scan(&balance)
+        if err!=nil{
+            log.Fatal(err)
+        }
 
-
+        c.JSON(http.StatusOK,gin.H{"balance":balance}) 
      }
 }
-
-
-
-
-
-
-
-
-
 
 
 
