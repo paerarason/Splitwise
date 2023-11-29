@@ -6,7 +6,9 @@ import (
 	"net/http"
 	"golang.org/x/crypto/bcrypt"
 	"time"
-	"os"
+	//"fmt"
+	//"os"
+
 )
 
 type Claims struct {
@@ -22,10 +24,9 @@ func JWTokenMiddlerware(c *gin.Context){
 		return
 	}
 
-	claims := Claims{}
-	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
-		return os.Getenv("secret"), nil
-	})
+	 token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+            return []byte("authkey"), nil // Use your secret key here
+        })
 
 	if err != nil || !token.Valid {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
@@ -33,8 +34,12 @@ func JWTokenMiddlerware(c *gin.Context){
 		return
 	}
 
-	c.Set("account_id", claims.AccountID)
-	c.Next()
+	 if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+         c.Set("account_id", claims["account_id"])
+	     c.Next()
+	 }
+
+	
 }
 
 
@@ -42,7 +47,8 @@ func JWTokenMiddlerware(c *gin.Context){
 func GenerateToken() gin.HandlerFunc {
     return func(c *gin.Context){
 	username := c.PostForm("username")
-	password := c.PostForm("password")
+	//password := c.PostForm("password")
+	
 	db,err:=database.DB_connection()
 	if err!=nil{
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Authentication failed"})
@@ -50,7 +56,7 @@ func GenerateToken() gin.HandlerFunc {
 	}
 
     //get the account password from the database 
-	var hash [] byte 
+	var hash string 
 	var  accountID int
 	Query:=`SELECT password,ID FROM account WHERE account.username=$1` 
     err=db.QueryRow(Query,username).Scan(&hash,&accountID)
@@ -60,22 +66,21 @@ func GenerateToken() gin.HandlerFunc {
 	}
     
 	//Error handle for password Comaparison
-	if !CheckPasswordHash(password,hash){
-        c.JSON(http.StatusInternalServerError, gin.H{"error": "Password Doesn't match"})
-		return
-	}
+
+	// if !CheckPasswordHash(password,hash){
+    //     c.JSON(http.StatusInternalServerError, gin.H{"error": "Password Doesn't match"})
+	// 	return
+	// }
 	
-	expirationTime := time.Now().Add(5 * time.Minute)
-	claims := &Claims{
-		AccountID: accountID,
-		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: expirationTime.Unix(),
-		},
-	}
+	expirationTime := time.Now().Add(20 * time.Minute)
+	claims := jwt.MapClaims{
+        "account_id": accountID,
+		"exp":expirationTime.Unix(),
+    }
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256,claims)
-	tokenString, err := token.SignedString(os.Getenv("secret"))
+	tokenString, err := token.SignedString([]byte("authkey"))
 	if err != nil  {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error generating token"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
 		return
 	}
 		c.SetCookie("token", tokenString, 3600, "/", "localhost", false, true)
@@ -87,7 +92,7 @@ func GenerateToken() gin.HandlerFunc {
 
 
 
-func CheckPasswordHash(password string , hash []byte) bool {
-    err := bcrypt.CompareHashAndPassword(hash, []byte(password))
+func CheckPasswordHash(password string , hash string) bool {
+    err := bcrypt.CompareHashAndPassword([]byte(password), []byte(password))
     return err == nil
 }

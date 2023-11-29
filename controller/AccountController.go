@@ -8,7 +8,6 @@ import (
 	 _ "github.com/lib/pq"
      "log"
      "database/sql"
-
 )
 type Account struct {
     Email string               `json:"email"`
@@ -29,7 +28,6 @@ func CreateAccount() gin.HandlerFunc {
 
         defer db.Close()        
         var acc Account
-
         //error Handling while Serialize the json from the request to the Account Struct 
         if err:=c.BindJSON(&acc);err!=nil{
              c.JSON(http.StatusBadRequest,gin.H{"message": "Bad Request "}) 

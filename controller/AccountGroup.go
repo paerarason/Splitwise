@@ -69,4 +69,3 @@ func CreateAccountGroup() gin.HandlerFunc {
         c.JSON(http.StatusOK,gin.H{"Group ID ":agid}) 
     }
 }
-
