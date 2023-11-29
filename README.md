@@ -6,13 +6,20 @@ Application for managing splits with friends or family when we want to split the
   go run main.go 
 ```
 
-#### GET /api/account/balance
-   Endpoints with Authentication token and gives current balance of the account 
+```http
+ GET /api/account/balance
+```
+Endpoints with Authentication token and gives current balance of the account 
 
-#### GET /api/account/spent
-   Gives the totals spends by the Account 
+```http
+GET /api/account/spent
+```
 
-#### POST /api/account/
+Gives the totals spends by the Account 
+```http
+ POST /api/account/
+```
+
 endpoint that creates account 
 
 ```bash
