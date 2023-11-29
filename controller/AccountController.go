@@ -1,14 +1,11 @@
 package controller
 
 import (
+    "github.com/paerarason/Splitwise/database"
 	"github.com/gin-gonic/gin"
     "net/http"
-    //"encoding/json"
 	"golang.org/x/crypto/bcrypt"
-	 "database/sql"
 	 _ "github.com/lib/pq"
-    "log"
-    "fmt"
 
 )
 type Account struct {
@@ -20,42 +17,66 @@ type Account struct {
 
 func CreateAccount() gin.HandlerFunc {
     return func(c *gin.Context){
-        connStr := "postgres://admin:7029@localhost/splitwise?sslmode=disable"     
-        db,err:=sql.Open("postgres",connStr)
-        if err != nil {
-		log.Fatal(err)
-     	}
-        defer db.Close()
+        db,err:=database.DB_connection()
         
+        //error Handling while making Connection 
+        if err!=nil{
+            c.JSON(http.StatusBadRequest,gin.H{"message": "Bad Request "}) 
+             return 
+        }
+
+        defer db.Close()        
         var acc Account
+
+        //error Handling while Serialize the json from the request to the Account Struct 
         if err:=c.BindJSON(&acc);err!=nil{
              c.JSON(http.StatusBadRequest,gin.H{"message": "Bad Request "}) 
              return 
         }
         
-        var accid int 
-        dberr := db.QueryRow(`INSERT INTO account (username,password,email,balance)
-	    VALUES(acc.Username,acc.Password,acc.Email,5000) RETURNING ID;`).Scan(&accid)
-         fmt.Println(acc.Username)
-
+        var accid int
+        query := `INSERT INTO account (username, password, email, balance)
+          VALUES ($1, $2, $3, $4) RETURNING id`
+        
+        dberr := db.QueryRow(query, acc.Username, acc.Password, acc.Email, 5000).Scan(&accid)
+        
+        //Handlinf while making Queries
         if dberr!=nil{ 
             c.JSON(http.StatusBadRequest,gin.H{"message": "Bad Request"}) 
              return 
         } 
-        c.JSON(http.StatusOK,gin.H{"message": ""}) 
+        c.JSON(http.StatusOK,gin.H{"account ID ":accid}) 
     }
 }
 
+
+
+
 func GETspends() gin.HandlerFunc {
     return func(c *gin.Context){
+
+
      }
 }
 
 
 func CheckBalance() gin.HandlerFunc {
     return func(c *gin.Context){
+
+
      }
 }
+
+
+
+
+
+
+
+
+
+
+
 
 
 func HashPassword(password string) (string, error) {

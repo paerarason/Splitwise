@@ -7,15 +7,13 @@ import (
 	 _ "github.com/lib/pq"
 
 )
-type Group struct {
-    name        string   `json:"name"`
-    description string   `json:"description"`
-    split float32        `json:"splitfor"`
+type Transaction struct {
+    account_group_id  int    `json:"account_groupid"`
+    amount float32          `json:"amount"`
 }
 
 
-
-func CreateGroup() gin.HandlerFunc {
+func CreateTransaction() gin.HandlerFunc {
     return func(c *gin.Context){
         db,err:=database.DB_connection()
         
@@ -26,26 +24,26 @@ func CreateGroup() gin.HandlerFunc {
         }
 
         defer db.Close()        
-        var gp Group
+        var tr Transaction
 
         //error Handling while Serialize the json from the request to the Account Struct 
-        if err:=c.BindJSON(&gp);err!=nil{
+        if err:=c.BindJSON(&tr);err!=nil{
              c.JSON(http.StatusBadRequest,gin.H{"message": "Bad Request "}) 
              return 
         }
         
-        var gpid int
-        query := `INSERT INTO groups (name, description,split_for)
-          VALUES ($1, $2, $3) RETURNING id`
+        var trid int
+        query := `INSERT INTO transaction (Account_Group_id,amount)
+          VALUES ($1, $2) RETURNING id`
         
-        dberr := db.QueryRow(query,gp.name,gp.description,gp.split).Scan(&gpid)
+        dberr := db.QueryRow(query,tr.account_group_id,tr.amount).Scan(&trid)
         
         //Handlinf while making Queries
         if dberr!=nil{ 
             c.JSON(http.StatusBadRequest,gin.H{"message": "Bad Request"}) 
              return 
         } 
-        c.JSON(http.StatusOK,gin.H{"Group ID ":gpid}) 
+        c.JSON(http.StatusOK,gin.H{"Transaction ID":trid}) 
     }
 }
 

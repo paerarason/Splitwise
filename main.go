@@ -13,17 +13,20 @@ func main() {
 	//Bunch of APIS for account management 
 	account:=router.Group("/account")
 	{
-        //account.GET("/:id",)
+        account.GET("/",)
         account.POST("/",controller.CreateAccount())
 	}
 
     //Bunch of APIS for GROUP management 
     groups:=router.Group("/groups")
 	{
-        //groups.PATCH("/:id",)
-		//groups.PATCH("/:id",)
-		//groups.DELETE("/:id",)
+        groups.POST("/add",controller.CreateAccountGroup())
         groups.POST("/",controller.CreateGroup())
+	}
+
+	transaction:=router.Group("/transaction")
+	{
+        transaction.POST("/",controller.CreateTransaction())
 	}
 
 }
