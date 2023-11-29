@@ -18,6 +18,7 @@ func main() {
 	{
         account.GET("/balance",controller.CheckBalance())
         account.POST("/",controller.CreateAccount())
+		account.GET("/spent",controller.GETspendAmount())
 	}
 
     //Bunch of APIS for GROUP management 
