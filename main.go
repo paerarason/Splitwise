@@ -10,6 +10,8 @@ func main() {
 	router := gin.Default()
 	defer router.Run(":8000")
 	
+   router.POST("/login",)
+
 	//Bunch of APIS for account management 
 	account:=router.Group("api/account")
 	{
@@ -23,4 +25,10 @@ func main() {
         groups.POST("/add",controller.CreateAccountGroup())
         groups.POST("/",controller.CreateGroup())
 	}
+
+	transaction:=router.Group("api/transaction")
+	{
+	    transaction.POST("/send",controller.SendAmount())
+	}
+
 }

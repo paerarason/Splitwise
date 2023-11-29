@@ -60,6 +60,12 @@ func SendAmount() gin.HandlerFunc {
 	if err != nil {
 		log.Fatal(err)
 	}
+    var tr Transaction
+    //error Handling while Serialize the json from the request to the Account Struct 
+    if err:=c.BindJSON(&tr);err!=nil{
+        c.JSON(http.StatusBadRequest,gin.H{"message": "Bad Request "}) 
+        return 
+    }
     
     var accountABalance float64
 	err = tx.QueryRow("SELECT balance FROM account WHERE ID = $1",accountAID).Scan(&accountABalance)
@@ -73,7 +79,7 @@ func SendAmount() gin.HandlerFunc {
 		return
 	}
 
-    
+
 	_, err = tx.Exec("UPDATE account SET balance = balance - $1 WHERE ID = $2", transferAmount, accountAID)
 	if err != nil {
 		tx.Rollback() 
@@ -91,9 +97,20 @@ func SendAmount() gin.HandlerFunc {
 		log.Fatal(err)
 	}
 
+    var trid int
+        query := `INSERT INTO transaction (Account_Group_id,amount)
+          VALUES ($1, $2) RETURNING id`
+        
+        dberr := db.QueryRow(query,tr.account_group_id,tr.amount).Scan(&trid)
+        
+        //Handling while making Queries
+        if dberr!=nil{ 
+            c.JSON(http.StatusBadRequest,gin.H{"message": "Bad Request"}) 
+             return 
+        } 
+        c.JSON(http.StatusOK,gin.H{"Transaction ID":trid}) 
     }
 }
-
 	
 
 	
