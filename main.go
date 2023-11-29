@@ -3,15 +3,16 @@ import (
 	"github.com/gin-gonic/gin"
 	//"github.com/paerarason/Splitwise/api"
 	"github.com/paerarason/Splitwise/controller"
+	"os"
 )
 
 func main() {
 	
 	router := gin.Default()
-	defer router.Run(":8000")
-	
-   router.POST("/login",)
+	defer router.Run(":"+os.Getenv("POST"))
 
+    router.POST("/login",middleware.GenerateToken())
+    router.Use(middleware.JWTokenMiddlerware)
 	//Bunch of APIS for account management 
 	account:=router.Group("api/account")
 	{

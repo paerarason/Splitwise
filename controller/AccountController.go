@@ -37,10 +37,11 @@ func CreateAccount() gin.HandlerFunc {
         }
         
         var accid int
+        bytes, err := bcrypt.GenerateFromPassword([]byte(acc.Password), 14)
         query := `INSERT INTO account (username, password, email, balance)
           VALUES ($1, $2, $3, $4) RETURNING id`
         
-        dberr := db.QueryRow(query, acc.Username, acc.Password, acc.Email, 5000).Scan(&accid)
+        dberr := db.QueryRow(query, acc.Username, bytes, acc.Email, 5000).Scan(&accid)
         //Handlinf while making Queries
         if dberr!=nil{ 
             c.JSON(http.StatusBadRequest,gin.H{"message": "Bad Request"}) 
@@ -59,7 +60,11 @@ func GETspendAmount() gin.HandlerFunc {
             c.JSON(http.StatusBadRequest,gin.H{"message": "Bad Request "}) 
              return 
         }
-        user_id:=token()
+        user_id, exists := c.Get("account_id")
+		if !exists {
+            c.JSON(http.StatusInternalServerError, gin.H{"error": "Account ID not found"})
+            return
+		}
         query := `SELECT COALESCE(SUM(transaction.amount), 0) AS total_amount
                    FROM account_Group
                    LEFT JOIN transaction  ON account_Group.ID = transaction.Account_Group_id
@@ -90,6 +95,12 @@ func CheckBalance() gin.HandlerFunc {
             c.JSON(http.StatusBadRequest,gin.H{"message": "Bad Request "}) 
              return 
         }
+        user_id, exists := c.Get("account_id")
+		if !exists {
+            c.JSON(http.StatusInternalServerError, gin.H{"error": "Account ID not found"})
+            return
+		}
+
         var balance float32
         query := `SELECT balance FROM account WHERE account.ID=$1`
         err = db.QueryRow(query, user_id).Scan(&balance)
@@ -104,12 +115,4 @@ func CheckBalance() gin.HandlerFunc {
 
 
 
-func HashPassword(password string) (string, error) {
-    bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
-    return string(bytes), err
-}
 
-func CheckPasswordHash(password, hash string) bool {
-    err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
-    return err == nil
-}

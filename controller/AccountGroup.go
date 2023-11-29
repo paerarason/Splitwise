@@ -45,9 +45,15 @@ func CreateAccountGroup() gin.HandlerFunc {
             }
         }
 
+        accountID, exists := c.Get("account_id")
+		    if !exists {
+                c.JSON(http.StatusInternalServerError, gin.H{"error": "Account ID not found"})
+                return
+		    }
 
-        if admin_id!= User.ID{
+        if admin_id!=accountID{
             //unautherised access
+            c.JSON(http.StatusUnauthorized, gin.H{"error":"Unauthorized Access"})
         }
 
 

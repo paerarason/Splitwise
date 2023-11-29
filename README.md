@@ -6,20 +6,11 @@ Application for managing splits with friends or family when we want to split the
   go run main.go 
 ```
 
-```http
-  POST  /api/account/
+## GET /api/account/
+example Account JSON parameters
+```bash
+   {
+    "":"",
+    
+   }
 ```
-
-| Parameter | Type     | Description                |
-| :-------- | :------- | :------------------------- |
-| `api_key` | `string` | **Required**. Your API key |
-
-#### Get item
-
-```http
-  GET /api/account/${id}
-```
-
-| Parameter | Type     | Description                       |
-| :-------- | :------- | :-------------------------------- |
-| `id`      | `string` | **Required**. Id of item to fetch |
