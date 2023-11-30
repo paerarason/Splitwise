@@ -6,6 +6,7 @@ import (
     "net/http"
 		 _ "github.com/lib/pq"
      "encoding/json"
+     "log"
 )
 type Transaction struct {
 		ID             int
@@ -27,10 +28,10 @@ func BillHistory() gin.HandlerFunc {
             c.JSON(http.StatusInternalServerError, gin.H{"error": "Account ID not found"})
             return
 		}
-        query := `SELECT ID,Account_Group_id,amount FROM 
-                   FROM transaction WHERE trandaction.spent_id=$1 AND trandactionrecieved_id=$2`
+        query := `SELECT ID,Account_Group_id,amount FROM transaction WHERE transaction.spent_id=$1 OR  transaction.recieved_id=$2`
         rows,derr := db.Query(query,user_id,user_id)
         if derr != nil {
+            log.Println(derr)
             c.JSON(http.StatusInternalServerError, gin.H{"error": "Error in Getting Records"})
             return
         }
@@ -56,6 +57,6 @@ func BillHistory() gin.HandlerFunc {
                 return
         }
             
-            c.JSON(http.StatusOK,jsonData) 
+            c.JSON(http.StatusOK,string(jsonData)) 
         }
     }

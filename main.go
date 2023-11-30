@@ -44,7 +44,7 @@ func main() {
 	
 	transactions:=router.Group("api/transaction")
 	{
-	    transactions.POST("/send",transaction.SendAmount())
+	    transactions.GET("/send/:id",transaction.SendAmount())
 	}
 
 }

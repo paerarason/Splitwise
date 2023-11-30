@@ -24,16 +24,13 @@ func SendAmount() gin.HandlerFunc {
             }
              
             //error Handling while Serialize the json from the request to the Account Struct
-            var tr Transaction
+            //var tr Transaction
             accountID, exists := c.Get("account_id")
 		    if !exists {
                 c.JSON(http.StatusInternalServerError, gin.H{"error": "Account ID not found"})
                 return
 		    }
-            if err:=c.BindJSON(&tr);err!=nil{
-                c.JSON(http.StatusBadRequest,gin.H{"message": "Bad Request "}) 
-                return 
-            }
+            
                  
             user_id,err:=account.CheckAccountID(accountID)
             if err!=nil{
@@ -41,20 +38,46 @@ func SendAmount() gin.HandlerFunc {
                 return
             }
 
+
+            
             // check from the group exists
-            gp_id:=c.Param("id")
-            var transferAmount float32
-            err = tx.QueryRow("SELECT ID FROM account_Group WHERE group_id=$1,account_id= $2,",gp_id,user_id).Scan(&transferAmount)
+            gp_id:=c.Param("id") 
+            var account_gp_id int      
+            err= tx.QueryRow("SELECT ID FROM account_Group WHERE group_id=$1 AND account_id=$2",gp_id,user_id).Scan(&account_gp_id)
+            if err != nil {
+                log.Println("Error executing query:", err)
+                     return
+            }
+            log.Println(account_gp_id)
             if err != nil {
                 tx.Rollback() 
                 c.JSON(http.StatusBadRequest,gin.H{"message": "No Groups or Transaction pending"}) 
                 return 
             }
             
-    
+
+
+            var transferAmount float32       
+            err= tx.QueryRow("SELECT split_for FROM groups WHERE groups.ID=$1",gp_id).Scan(&transferAmount)
+            if err != nil {
+                log.Println("Error executing query:", err)
+                     return
+            }
+            log.Println(account_gp_id)
+            if err != nil {
+                tx.Rollback() 
+                c.JSON(http.StatusBadRequest,gin.H{"message": "No Groups or Transaction pending"}) 
+                return 
+            }
+
+
+
+
+
+           
            //COUNT THE NUMBER OF USERS IN THAT GROUP
             var member_count int 
-            err = tx.QueryRow("SELECT COUNT(ID) FROM account_Group WHERE group_id=$1",gp_id).Scan(&member_count)
+            err = tx.QueryRow("SELECT COUNT(ID) FROM account_Group WHERE account_Group.group_id=$1",gp_id).Scan(&member_count)
             if err != nil {
                 tx.Rollback() 
                 c.JSON(http.StatusInternalServerError, gin.H{"error": "Account ID not found"})
@@ -73,7 +96,7 @@ func SendAmount() gin.HandlerFunc {
 
              CHECK THE BALANCE > THE SPLIT AMOUNTH 
             */
-
+            log.Println(member_count,transferAmount,accountABalance,gp_id)
             if accountABalance < transferAmount/float32(member_count) {
                 tx.Rollback() 
                 c.JSON(http.StatusInternalServerError, gin.H{"error": "Account ID not found"})
@@ -102,16 +125,9 @@ func SendAmount() gin.HandlerFunc {
                 return 
             }
            
-           var account_group_id int 
-           err = tx.QueryRow("SELECT ID FROM account_Group WHERE group_id=$1,account_id=$2",gp_id,user_id).Scan(&account_group_id)
-            if err != nil {
-                tx.Rollback() 
-                c.JSON(http.StatusInternalServerError, gin.H{"error": "account_group_id not found"})
-                return 
-            }
-          
+
              var trid int
-            _, err = tx.Exec("INSERT  INTO transaction(spent_id,recieved_id,Account_Group_id,amount) VALUES($1,$2,$3,$4)",accountID,admin_id,account_group_id,transferAmount/float32(member_count))
+            _, err = tx.Exec("INSERT  INTO transaction(spent_id,recieved_id,Account_Group_id,amount) VALUES($1,$2,$3,$4)",accountID,admin_id,account_gp_id,transferAmount/float32(member_count))
             if err != nil {
                 tx.Rollback() 
                 c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed Transaction"})
