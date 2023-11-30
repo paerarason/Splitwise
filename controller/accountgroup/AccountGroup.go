@@ -2,6 +2,7 @@ package accountgroup
 
 import (
 	"github.com/paerarason/Splitwise/database"
+    "github.com/paerarason/Splitwise/controller/account"
 	"github.com/gin-gonic/gin"
     "net/http"
 	 _ "github.com/lib/pq"
@@ -49,13 +50,15 @@ func CreateAccountGroup() gin.HandlerFunc {
             c.JSON(http.StatusInternalServerError, gin.H{"error": "Account ID not found"})
             return
         }
-        if accountID, ok := accountID.(float64); ok {
-                accountIDInt := int(accountID)
-                if accountIDInt!=admin_id{
+
+        user_id,err:=account.CheckAccountID(accountID)
+        if err!=nil {
             c.JSON(http.StatusBadRequest,gin.H{"message": "Unautherised acess"}) 
              return 
               }
-        if admin_id!=accountIDInt {
+        
+        
+        if admin_id!=user_id {
             c.JSON(http.StatusInternalServerError, gin.H{"error": "Uautherised acess"})
             return
              }
@@ -80,5 +83,4 @@ func CreateAccountGroup() gin.HandlerFunc {
         }
            
     }
-}
 

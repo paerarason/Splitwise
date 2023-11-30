@@ -23,8 +23,11 @@ func GETspendAmount() gin.HandlerFunc {
             c.JSON(http.StatusInternalServerError, gin.H{"error": "Account ID not found"})
             return
         }
-        if accountID, ok := accountID.(float64); ok { 
-        user_id := int(accountID)
+        user_id,err:=CheckAccountID(accountID)
+        if err!=nil{
+            c.JSON(http.StatusInternalServerError, gin.H{"error": "Account ID not found"})
+            return
+        }
         query := `SELECT COALESCE(SUM(transaction.amount), 0) AS total_amount
                    FROM account_Group
                    LEFT JOIN transaction  ON account_Group.ID = transaction.Account_Group_id
@@ -39,10 +42,10 @@ func GETspendAmount() gin.HandlerFunc {
              c.JSON(http.StatusBadRequest,gin.H{"message": "Records Not Found "}) 
              return
             }
-        c.JSON(http.StatusOK,gin.H{"spents":spent}) }
-      c.JSON(http.StatusBadRequest,gin.H{"message": "Unautherised acess"}) 
-             return 
-              }
-    }
+        c.JSON(http.StatusOK,gin.H{"spents":spent})
+}
 
 
+
+
+}

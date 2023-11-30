@@ -2,6 +2,7 @@ package transaction
 
 import (
 	"github.com/paerarason/Splitwise/database"
+    "github.com/paerarason/Splitwise/controller/account"
 	"github.com/gin-gonic/gin"
     "net/http"
 	 _ "github.com/lib/pq"
@@ -33,11 +34,17 @@ func SendAmount() gin.HandlerFunc {
                 c.JSON(http.StatusBadRequest,gin.H{"message": "Bad Request "}) 
                 return 
             }
-                  
+                 
+            user_id,err:=account.CheckAccountID(accountID)
+            if err!=nil{
+                c.JSON(http.StatusInternalServerError, gin.H{"error": "Account ID not found"})
+                return
+            }
+
             // check from the group exists
             gp_id:=c.Param("id")
             var transferAmount float32
-            err = tx.QueryRow("SELECT ID FROM account_Group WHERE group_id=$1,account_id= $2,",gp_id,accountID).Scan(&transferAmount)
+            err = tx.QueryRow("SELECT ID FROM account_Group WHERE group_id=$1,account_id= $2,",gp_id,user_id).Scan(&transferAmount)
             if err != nil {
                 tx.Rollback() 
                 c.JSON(http.StatusBadRequest,gin.H{"message": "No Groups or Transaction pending"}) 
@@ -55,7 +62,7 @@ func SendAmount() gin.HandlerFunc {
             }
         
             var accountABalance float32
-            err = tx.QueryRow("SELECT balance FROM account WHERE ID = $1",accountID).Scan(&accountABalance)
+            err = tx.QueryRow("SELECT balance FROM account WHERE ID = $1",user_id).Scan(&accountABalance)
             if err != nil {
                 tx.Rollback() 
                 c.JSON(http.StatusInternalServerError, gin.H{"error": "Account ID not found"})
@@ -96,7 +103,7 @@ func SendAmount() gin.HandlerFunc {
             }
            
            var account_group_id int 
-           err = tx.QueryRow("SELECT ID FROM account_Group WHERE group_id=$1,account_id=$2",gp_id,accountID).Scan(&account_group_id)
+           err = tx.QueryRow("SELECT ID FROM account_Group WHERE group_id=$1,account_id=$2",gp_id,user_id).Scan(&account_group_id)
             if err != nil {
                 tx.Rollback() 
                 c.JSON(http.StatusInternalServerError, gin.H{"error": "account_group_id not found"})

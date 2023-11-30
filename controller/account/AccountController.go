@@ -6,6 +6,7 @@ import (
     "net/http"
 	"golang.org/x/crypto/bcrypt"
 	 _ "github.com/lib/pq"
+     "errors"
 
 )
 type Account struct {
@@ -48,3 +49,15 @@ func CreateAccount() gin.HandlerFunc {
     }
 }
 
+
+
+
+func CheckAccountID(accountID any) (int,error)  {
+    
+        if accountID, ok := accountID.(float64); ok {
+                accountIDInt := int(accountID)
+                return accountIDInt,nil
+        }else{
+            return 0,errors.New("ID not found ")
+        }
+}
