@@ -10,6 +10,7 @@ Application for managing splits with friends or family when we want to split the
 
 Then RUN 
 ```bash
+  go mod tidy
   go run main.go 
 ```
 
