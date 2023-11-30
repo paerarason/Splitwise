@@ -16,18 +16,26 @@ Then RUN
 ```http
 GET /api/account/balance
 ```
-Endpoints with Authentication token and gives current balance of the account 
+#### Endpoints with Authentication token and gives current balance of the account 
 
 ```http
 GET /api/account/spent
 ```
 
-Gives the totals spends by the Account 
+#### Gives the totals spends by the Account 
 ```http
 POST /api/account/
 ```
+#### endpoint that creates account 
 
-endpoint that creates account 
+```http
+POST /api/groups/add
+```
+#### Endpoint to GET the transaction previously 
+```http
+GET /api/account/history
+```
+
 
 ```bash
       {
@@ -41,7 +49,7 @@ endpoint that creates account
 ```http
 POST /api/groups/add
 ```
-endpoint to ADD User to the group
+#### endpoint to ADD User to the group
 example data 
 ```bash
     {
@@ -49,7 +57,9 @@ example data
       "group_id":6
     }
 ```
+
+
 ```http
+GET api/transaction/send/:id
 ```
-
-
+#### API to send the amount to the paricular Group
