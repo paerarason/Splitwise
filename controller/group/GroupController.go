@@ -1,18 +1,17 @@
-package controller
-
+package group
 import (
 	"github.com/paerarason/Splitwise/database"
 	"github.com/gin-gonic/gin"
     "net/http"
 	 _ "github.com/lib/pq"
+     "log"
 
 )
 type Group struct {
-    name        string   `json:"name"`
-    description string   `json:"description"`
-    split float32        `json:"splitfor"`
+    Name        string  `json:"name"`
+    Description string  `json:"description"`
+    Split       float32 `json:"split"`
 }
-
 
 
 func CreateGroup() gin.HandlerFunc {
@@ -30,18 +29,26 @@ func CreateGroup() gin.HandlerFunc {
 
         //error Handling while Serialize the json from the request to the Account Struct 
         if err:=c.BindJSON(&gp);err!=nil{
+            log.Println(err)
              c.JSON(http.StatusBadRequest,gin.H{"message": "Bad Request "}) 
              return 
         }
-        
+        log.Println(gp.Name)
         var gpid int
-        query := `INSERT INTO groups (name, description,split_for)
-          VALUES ($1, $2, $3) RETURNING id`
+        accountID, exists := c.Get("account_id")
+		    if !exists {
+                
+                c.JSON(http.StatusInternalServerError, gin.H{"error": "Account ID not found"})
+                return
+		    }
+        query := `INSERT INTO groups (name, admin_id,description,split_for)
+          VALUES ($1, $2, $3,$4) RETURNING id`
         
-        dberr := db.QueryRow(query,gp.name,gp.description,gp.split).Scan(&gpid)
+        err = db.QueryRow(query,gp.Name,accountID,gp.Description,gp.Split).Scan(&gpid)
         
         //Handlinf while making Queries
-        if dberr!=nil{ 
+        if err!=nil{ 
+            log.Println(err)
             c.JSON(http.StatusBadRequest,gin.H{"message": "Bad Request"}) 
              return 
         } 

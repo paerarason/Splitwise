@@ -31,4 +31,18 @@ endpoint that creates account
       }
 ```
 
-###  
+```http
+POST /api/groups/add
+```
+endpoint to ADD User to the group
+example data 
+```bash
+     {
+    "account_id":[3,5],
+    "group_id":6
+    }
+```
+```http
+GET /api/account/spent
+```
+TO get the toatal spends 
