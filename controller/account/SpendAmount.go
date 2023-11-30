@@ -42,7 +42,7 @@ func GETspendAmount() gin.HandlerFunc {
              c.JSON(http.StatusBadRequest,gin.H{"message": "Records Not Found "}) 
              return
             }
-        c.JSON(http.StatusOK,gin.H{"spents":spent})
+        c.JSON(http.StatusOK,gin.H{"spents":spent.Float64})
 }
 
 

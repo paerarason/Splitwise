@@ -1,6 +1,6 @@
 # Splitwise
 Application for managing splits with friends or family when we want to split the amount which we spend
-
+![Database Schema](static/Db_schema.png)
 #### Run the Application
 
 - Create a database Locally

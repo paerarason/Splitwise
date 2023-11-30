@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
     "net/http"
 		 _ "github.com/lib/pq"
+         "log"
 )
 
 func Balance() gin.HandlerFunc {
@@ -17,17 +18,23 @@ func Balance() gin.HandlerFunc {
         }
 
         defer db.Close() 
-		user_id, exists := c.Get("account_id")
-		if !exists {
+		accountID, exists := c.Get("account_id")
+        if !exists {
             c.JSON(http.StatusInternalServerError, gin.H{"error": "Account ID not found"})
             return
-		}   
-        var balance int
+        }
+        user_id,err:=CheckAccountID(accountID)
+        if err!=nil{
+            c.JSON(http.StatusInternalServerError, gin.H{"error": "Account ID not found"})
+            return
+        }  
+        var balance float32
         query := `SELECT balance FROM account WHERE ID=$1`
         
         dberr := db.QueryRow(query,user_id).Scan(&balance)
         //Handling while making Queries
-        if dberr!=nil{ 
+        if dberr!=nil{
+            log.Println(dberr) 
             c.JSON(http.StatusBadRequest,gin.H{"message": "Bad Request"}) 
              return 
         } 
