@@ -58,8 +58,7 @@ example data
     }
 ```
 
-
 ```http
-GET api/transaction/send/:id
+GET /api/transaction/send/:id
 ```
 #### API to send the amount to the paricular Group
