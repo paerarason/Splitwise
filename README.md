@@ -1,7 +1,14 @@
 # Splitwise
 Application for managing splits with friends or family when we want to split the amount which we spend
 
-#### Run the Application 
+#### Run the Application
+
+- Create a database Locally
+- change/add the database name to the .env file
+- run the script in database/Splitwise.sql to create tables 
+- run database/migration.sql to populate some test data to database
+
+Then RUN 
 ```bash
   go run main.go 
 ```
@@ -45,4 +52,3 @@ example data
 ```http
 GET /api/account/spent
 ```
-TO get the toatal spends 

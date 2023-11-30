@@ -22,7 +22,8 @@ func main() {
     }
 	defer router.Run(":"+os.Getenv("PORT"))
     fmt.Println(os.Getenv("PORT"))
-    router.POST("/login",middleware.GenerateToken())
+    
+	router.POST("/login",middleware.GenerateToken())
     router.Use(middleware.JWTokenMiddlerware)
 	//Bunch of APIS for account management 
 	accounts:=router.Group("api/account")
