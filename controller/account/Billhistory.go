@@ -28,8 +28,13 @@ func BillHistory() gin.HandlerFunc {
             c.JSON(http.StatusInternalServerError, gin.H{"error": "Account ID not found"})
             return
 		}
-        query := `SELECT ID,Account_Group_id,amount FROM transaction WHERE transaction.spent_id=$1 OR  transaction.recieved_id=$2`
-        rows,derr := db.Query(query,user_id,user_id)
+        thirtyDaysAgo := time.Now().AddDate(0, 0, -30).Format("2006-01-02")
+        query := `
+        SELECT ID, Account_Group_id, amount 
+        FROM transaction 
+        WHERE (transaction.spent_id = $1 OR transaction.recieved_id = $2)
+        AND created_at >= $3`
+        rows,derr := db.Query(query,user_id,user_id,thirtyDaysAgo)
         if derr != nil {
             log.Println(derr)
             c.JSON(http.StatusInternalServerError, gin.H{"error": "Error in Getting Records"})
