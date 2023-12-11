@@ -17,6 +17,8 @@ func main() {
 	router := gin.Default()
 	err := godotenv.Load(".env")
     
+
+	
 	if err != nil {
         log.Fatalf("Error loading .env file: %s", err)
     }
@@ -24,11 +26,11 @@ func main() {
     fmt.Println(os.Getenv("PORT"))
     
 	router.POST("/login",middleware.GenerateToken())
+	router.POST("api/account",account.CreateAccount())
     router.Use(middleware.JWTokenMiddlerware)
 	//Bunch of APIS for account management 
 	accounts:=router.Group("api/account")
 	{
-        accounts.POST("/",account.CreateAccount())
 		accounts.GET("/balance",account.Balance())
 		accounts.GET("/spent",account.GETspendAmount())
 		accounts.GET("/history",account.BillHistory())

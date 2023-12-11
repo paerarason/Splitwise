@@ -9,6 +9,7 @@ import (
      "log"
      "time"
 )
+
 type Transaction struct {
 		ID             int
 		AccountGroupID int

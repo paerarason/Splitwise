@@ -5,7 +5,8 @@ import (
 	"github.com/gin-gonic/gin"
     "net/http"
 	 _ "github.com/lib/pq"
-     "database/sql"
+   //  "database/sql"
+   "log"
 
 )
 func GETspendAmount() gin.HandlerFunc {
@@ -28,21 +29,22 @@ func GETspendAmount() gin.HandlerFunc {
             c.JSON(http.StatusInternalServerError, gin.H{"error": "Account ID not found"})
             return
         }
-        query := `SELECT COALESCE(SUM(transaction.amount), 0) AS total_amount
-                   FROM account_Group
-                   LEFT JOIN transaction  ON account_Group.ID = transaction.Account_Group_id
-                   WHERE account_Group.ID = $1
-        `
-        var spent sql.NullFloat64
+        //Query_for_Account
+
+
+        query := `SELECT COALESCE(SUM(transaction.amount), 0)
+                   FROM transaction
+                   WHERE transaction.spent_id = $1`
+        var spent float32
+        log.Println(user_id)
         err = db.QueryRow(query, user_id).Scan(&spent)
         if err != nil {
+            c.JSON(http.StatusInternalServerError, gin.H{"error": err})
+            return
         }
-
-        if !spent.Valid {
-             c.JSON(http.StatusBadRequest,gin.H{"message": "Records Not Found "}) 
-             return
-            }
-        c.JSON(http.StatusOK,gin.H{"spents":spent.Float64})
+         log.Println(spent)
+    
+        c.JSON(http.StatusOK,gin.H{"spents":spent})
 }
 
 

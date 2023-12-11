@@ -19,5 +19,6 @@ func DB_connection() (*sql.DB,error){
         if err != nil {
      		log.Fatal(err)
      	}
+		
 		return db,err
 }

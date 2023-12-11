@@ -7,6 +7,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"time"
 	//"fmt"
+	"log"
 	//"os"
 
 )
@@ -23,11 +24,9 @@ func JWTokenMiddlerware(c *gin.Context){
 		c.Abort()
 		return
 	}
-
-	 token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
             return []byte("authkey"), nil // Use your secret key here
         })
-
 	if err != nil || !token.Valid {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		c.Abort()
@@ -47,14 +46,15 @@ func JWTokenMiddlerware(c *gin.Context){
 func GenerateToken() gin.HandlerFunc {
     return func(c *gin.Context){
 	username := c.PostForm("username")
-	//password := c.PostForm("password")
+	password := c.PostForm("password")
 	
 	db,err:=database.DB_connection()
 	if err!=nil{
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Authentication failed"})
 			return
 	}
-
+     
+   log.Println(username,password)
     //get the account password from the database 
 	var hash string 
 	var  accountID int
@@ -66,11 +66,10 @@ func GenerateToken() gin.HandlerFunc {
 	}
     
 	//Error handle for password Comaparison
-
-	// if !CheckPasswordHash(password,hash){
-    //     c.JSON(http.StatusInternalServerError, gin.H{"error": "Password Doesn't match"})
-	// 	return
-	// }
+	if !CheckPasswordHash(password,hash){
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "Password Doesn't match"})
+		return
+	}
 	
 	expirationTime := time.Now().Add(20 * time.Minute)
 	claims := jwt.MapClaims{
@@ -88,11 +87,7 @@ func GenerateToken() gin.HandlerFunc {
 	}
 }
 
-
-
-
-
 func CheckPasswordHash(password string , hash string) bool {
-    err := bcrypt.CompareHashAndPassword([]byte(password), []byte(password))
+    err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
     return err == nil
 }
